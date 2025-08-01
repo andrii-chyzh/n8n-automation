@@ -1,13 +1,10 @@
 FROM docker.n8n.io/n8nio/n8n:latest
 
-# Встановлюємо тільки Python3 (без pip та зайвих бібліотек)
-USER root
-RUN apk update && apk add --no-cache \
-    python3 \
-    && rm -rf /var/cache/apk/*
+# n8n Python Code Node використовує Pyodide (WebAssembly Python)
+# і не потребує встановлення Python на сервері
+# Всі Python операції виконуються в браузері
 
-# Переключаємося назад на користувача node
 USER node
 
-# Перевіряємо встановлення Python
-RUN python3 --version
+# Перевіряємо, що n8n працює
+RUN n8n --version
