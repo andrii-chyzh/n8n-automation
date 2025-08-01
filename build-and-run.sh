@@ -27,7 +27,4 @@ docker run -d -it --rm \
 echo "✅ Готово! n8n запущено"
 echo "🌐 Доступний за адресою: https://your_domain"
 echo ""
-echo "🔍 Перевірка роботи n8n:"
-docker exec -it n8n n8n --version
-echo ""
 echo "📋 Python Code Node (Pyodide) готовий до використання!"
