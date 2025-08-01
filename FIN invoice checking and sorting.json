@@ -1,0 +1,1068 @@
+{
+  "name": "FIN invoice checking and sorting",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "search",
+        "query": "={{$json.invoiceName}}",
+        "returnAll": true,
+        "filters": {
+          "path": "=/Invoices"
+        }
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -48
+      ],
+      "id": "a513addd-5b66-47e1-a55a-e6aaed9b41cb",
+      "name": "Search using FIN number",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -304
+      ],
+      "id": "fc47d6f7-e14e-409c-be2c-43a801b1310f",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9010e6ce-35ef-4465-821f-ff100a945ae3",
+              "name": "accountName",
+              "value": "={{ $json.accountName }}",
+              "type": "string"
+            },
+            {
+              "id": "f1c2b225-6338-464c-82a7-2445a3fc696d",
+              "name": "invoiceName",
+              "value": "={{ $json.invoiceName }}",
+              "type": "string"
+            },
+            {
+              "id": "cab58da9-e03f-48d4-baa8-9a1e6bb5166a",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "28deab07-3a4e-4cd0-85aa-87b7268eb6af",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            },
+            {
+              "id": "4b65a275-d186-4609-a214-8d2ca65420d8",
+              "name": "fullInvoiceName",
+              "value": "={{ $json.fullInvoiceName }}",
+              "type": "string"
+            },
+            {
+              "id": "98c1c170-3301-411a-9406-f07be7d7a3c6",
+              "name": "item",
+              "value": "={{ $json.item }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "6c9bfa30-97ae-423d-82bb-62f1ff82b3e6",
+      "name": "Save FIN data before search"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fileName = $json.name || '';\n\n// Пошук шаблону FIN-xxxxx або FINORG-xxxxx\nconst match = fileName.match(/(FIN(?:ORG)?-\\d+)/);\n\n// Повертаємо знайдене ім’я інвойсу або null\nreturn {\n  invoiceName: match ? match[1] : null,\n  fileName: $json.name,\n  pathDisplay: $json.path_display\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -48
+      ],
+      "id": "92de1d84-abeb-4610-85fe-1300789a6110",
+      "name": "Get FIN invoice name using regexp"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  foundInvoice: $json.invoiceName,\n  fileName: $json.fileName,\n  pathDisplay: $json.pathDisplay\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -48
+      ],
+      "id": "0511bcaf-1474-4647-bfc3-95fd1f9170ce",
+      "name": "Get found FIN Invoice"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "invoiceName",
+              "field2": "foundInvoice"
+            }
+          ]
+        },
+        "joinMode": "enrichInput1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1552,
+        -112
+      ],
+      "id": "95fbe262-564f-4933-84d8-ad4741a69c66",
+      "name": "Merge FIN invoice data"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  ...$json,\n  status: $json.foundInvoice ? 'OK' : 'NOK'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -112
+      ],
+      "id": "5c263332-8f17-48f1-bd60-817a3ec1329a",
+      "name": "SET 'OK' : 'NOK' status for FIN invoices"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  date: $json.date,\n  invoiceName: $json.invoiceName,\n  status: $json.status,\n  fullInvoiceName: $json.fullInvoiceName,\n  account: $json.accountName,\n  item: $json.item\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -16
+      ],
+      "id": "81bde6ed-65ae-4971-b096-4760f1793c1e",
+      "name": "Delete temp columns from FIN data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9010e6ce-35ef-4465-821f-ff100a945ae3",
+              "name": "accountName",
+              "value": "={{ $json.accountName }}",
+              "type": "string"
+            },
+            {
+              "id": "f1c2b225-6338-464c-82a7-2445a3fc696d",
+              "name": "alternativeInvoiceName",
+              "value": "={{ $json.alternativeInvoiceName }}",
+              "type": "string"
+            },
+            {
+              "id": "cab58da9-e03f-48d4-baa8-9a1e6bb5166a",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "28deab07-3a4e-4cd0-85aa-87b7268eb6af",
+              "name": "path",
+              "value": "={{ $json.path }}",
+              "type": "string"
+            },
+            {
+              "id": "e1a52d55-2848-4ff0-802e-e91ebca8a2b0",
+              "name": "fullInvoiceName",
+              "value": "={{ $json.fullInvoiceName }}",
+              "type": "string"
+            },
+            {
+              "id": "43d0d42f-4e94-4fc7-bd85-0dbca559f17c",
+              "name": "item",
+              "value": "={{ $json.item }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -496
+      ],
+      "id": "e0e65ee3-aa45-4d5d-b9f6-aff2c1c11f4c",
+      "name": "Save ALT data before search"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "search",
+        "query": "={{$json.alternativeInvoiceName}}",
+        "returnAll": true,
+        "filters": {
+          "path": "=/Invoices"
+        }
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -384
+      ],
+      "id": "7244680d-fa36-4e12-81a1-cf98afe923b5",
+      "name": "Search using ALT number",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "alternativeInvoiceName",
+              "field2": "foundInvoice"
+            }
+          ]
+        },
+        "joinMode": "enrichInput1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1552,
+        -496
+      ],
+      "id": "708b0fe8-92af-4b01-a078-dc3456fe2939",
+      "name": "Merge FIN invoice data1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fileName = $json.name || '';\n\n// Пошук тільки альтернативного формату: F або P + 7 цифр\nconst match = fileName.match(/[FP]\\d{7}/);\n\n// Повертаємо знайдене альтернативне ім’я інвойсу або null\nreturn {\n  altInvoiceName: match ? match[0] : null,\n  fileName: $json.name,\n  pathDisplay: $json.path_display\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -384
+      ],
+      "id": "eb6c9038-6163-4f8e-bd48-74f481b62986",
+      "name": "Get ALT invoice name using regexp"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  foundInvoice: $json.altInvoiceName,\n  fileName: $json.fileName,\n  pathDisplay: $json.pathDisplay\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -384
+      ],
+      "id": "e8f1fbf2-e5cb-4210-a90e-fc1554afa1db",
+      "name": "Get found ALT Invoice"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  ...$json,\n  status: $json.foundInvoice ? 'OK' : 'NOK'\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -496
+      ],
+      "id": "5767e2a4-6aca-4bfd-b2d3-4da96a8b6c46",
+      "name": "SET 'OK' : 'NOK' status for ALT invoices"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nreturn items.filter(item => {\n  const key = item.json.fullInvoiceName;\n  if (!key || seen.has(key)) return false;\n  seen.add(key);\n  return true;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -496
+      ],
+      "id": "92416783-78d2-42c8-ab4c-a7301cad4e41",
+      "name": "Filter unique ALT invoices"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  date: $json.date,\n  invoiceName: $json.invoiceName,\n  status: $json.status,\n  fullInvoiceName: $json.fullInvoiceName,\n  account: $json.accountName,\n  item: $json.item\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -400
+      ],
+      "id": "ab89c1d0-4931-4dfe-9b7b-8733c22d3e6d",
+      "name": "Delete temp columns from ALT data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nreturn items.filter(item => {\n  const key = item.json.invoiceName;\n  if (!key || seen.has(key)) return false;\n  seen.add(key);\n  return true;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -112
+      ],
+      "id": "967edf28-e49e-4ea9-a66e-d8ee9867d26c",
+      "name": "Filter unique FIN invoices"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nreturn items.filter(item => {\n  const key = item.json.foundInvoice;\n  if (!key || seen.has(key)) return false;\n  seen.add(key);\n  return true;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        -48
+      ],
+      "id": "4e2508c6-5880-4b6f-b44d-c45608ed9fc8",
+      "name": "Filter unique FIN invoices again"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nreturn items.filter(item => {\n  const key = item.json.foundInvoice;\n  if (!key || seen.has(key)) return false;\n  seen.add(key);\n  return true;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        -384
+      ],
+      "id": "c8d1fdf1-254d-43c3-be8f-394ab1eb3468",
+      "name": "Filter unique ALT invoices again"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2224,
+        -208
+      ],
+      "id": "8589ecc3-25ca-4b61-9a9f-ae0a68030337",
+      "name": "Merge FIN and ALT data"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import re\nimport base64\nfrom io import BytesIO\nimport zipfile\n\nfirst_item = _input.first()\nbinary_data = first_item.binary['data']\n\nif hasattr(binary_data, 'to_py'):\n    py_data = binary_data.to_py()\n    if isinstance(py_data, dict) and 'data' in py_data:\n        data_string = py_data['data']\n        file_data = base64.b64decode(data_string)\n    else:\n        file_data = base64.b64decode(str(py_data))\nelse:\n    file_data = base64.b64decode(binary_data)\n\nxlsx_file = BytesIO(file_data)\nresults = []\n\nwith zipfile.ZipFile(xlsx_file) as zip_file:\n    # 1. Shared Strings\n    shared_strings = []\n    try:\n        with zip_file.open('xl/sharedStrings.xml') as ss_file:\n            ss_content = ss_file.read().decode('utf-8')\n            si_blocks = re.findall(r'<si>(.*?)</si>', ss_content, re.DOTALL)\n            for si in si_blocks:\n                t_texts = re.findall(r'<t[^>]*>(.*?)</t>', si, re.DOTALL)\n                shared_strings.append(''.join(t_texts))\n    except KeyError:\n        pass\n\n    # 2. Visible sheets\n    visible_sheets = []\n    sheet_rels = {}\n    try:\n        with zip_file.open('xl/workbook.xml') as wb_file:\n            wb_content = wb_file.read().decode('utf-8')\n            for match in re.finditer(r'<sheet[^>]+>', wb_content):\n                tag = match.group(0)\n                name = re.search(r'name=\"([^\"]+)\"', tag)\n                rid = re.search(r'r:id=\"([^\"]+)\"', tag)\n                state = re.search(r'state=\"([^\"]+)\"', tag)\n                if name and rid:\n                    is_hidden = state and state.group(1) == \"hidden\"\n                    if not is_hidden:\n                        visible_sheets.append({\n                            \"name\": name.group(1),\n                            \"rid\": rid.group(1)\n                        })\n    except KeyError:\n        pass\n\n    # 3. Sheet relationships\n    try:\n        with zip_file.open('xl/_rels/workbook.xml.rels') as rels_file:\n            rels_content = rels_file.read().decode('utf-8')\n            for match in re.finditer(r'<Relationship[^>]+Id=\"([^\"]+)\"[^>]+Target=\"([^\"]+)\"', rels_content):\n                rid = match.group(1)\n                target = match.group(2)\n                if not target.startswith('xl/'):\n                    target = 'xl/' + target\n                sheet_rels[rid] = target\n    except KeyError:\n        pass\n\n    # 4. Process each visible sheet\n    for sheet in visible_sheets:\n        sheet_name = sheet['name']\n        sheet_file = sheet_rels.get(sheet['rid'])\n        if not sheet_file:\n            continue\n        try:\n            with zip_file.open(sheet_file) as sheet_xml:\n                sheet_content = sheet_xml.read().decode('utf-8')\n                \n                # Find the first data row\n                first_data_row = None\n                for row_match in re.finditer(r'<row r=\"(\\d+)\"[^>]*>(.*?)</row>', sheet_content, re.DOTALL):\n                    row_num = int(row_match.group(1))\n                    row_xml = row_match.group(2)\n                    \n                    has_data = False\n                    for cell_match in re.finditer(r'<c r=\"([A-Z]+)(\\d+)\"(?:[^>]*t=\"([^\"]+)\")?[^>]*>(.*?)</c>', row_xml, re.DOTALL):\n                        col_letter = cell_match.group(1)\n                        cell_type = cell_match.group(3)\n                        cell_inner = cell_match.group(4)\n                        v_match = re.search(r'<v>(.*?)</v>', cell_inner)\n                        if v_match:\n                            v = v_match.group(1)\n                            if cell_type == \"s\" and v.isdigit():\n                                has_data = True\n                                break\n                            elif col_letter in ['B', 'D', 'G', 'M'] and v.strip():\n                                has_data = True\n                                break\n                    \n                    if has_data:\n                        first_data_row = row_num\n                        break\n                \n                if first_data_row is None:\n                    continue\n                \n                # Process all rows starting from first_data_row\n                for row_match in re.finditer(r'<row r=\"(\\d+)\"[^>]*>(.*?)</row>', sheet_content, re.DOTALL):\n                    row_num = int(row_match.group(1))\n                    row_xml = row_match.group(2)\n                    if row_num < first_data_row:\n                        continue\n                    \n                    row_cells = {}\n                    for cell_match in re.finditer(r'<c r=\"([A-Z]+)(\\d+)\"(?:[^>]*t=\"([^\"]+)\")?[^>]*>(.*?)</c>', row_xml, re.DOTALL):\n                        col_letter = cell_match.group(1)\n                        cell_type = cell_match.group(3)\n                        cell_inner = cell_match.group(4)\n                        v_match = re.search(r'<v>(.*?)</v>', cell_inner)\n                        if v_match:\n                            v = v_match.group(1)\n                            if cell_type == \"s\" and v.isdigit():\n                                idx = int(v)\n                                if idx < len(shared_strings):\n                                    value = shared_strings[idx]\n                                else:\n                                    value = f\"INVALID_INDEX_{v}\"\n                            else:\n                                value = v\n                            row_cells[col_letter] = value\n                    \n                    date = row_cells.get('B', '')\n                    invoice = row_cells.get('D', '')\n                    amount = row_cells.get('G', '')\n                    item = row_cells.get('M', '')\n                    \n                    # Filter empty invoices and headers\n                    if not invoice or invoice.strip() == \"\":\n                        continue\n                    \n                    header_values = ['Memo/Description', 'Date', 'Amount', 'Item', 'Account', 'Type', 'Category']\n                    if invoice in header_values or date in header_values or amount in header_values or item in header_values:\n                        continue\n                    \n                    if not (date or invoice or amount or item):\n                        continue\n                    \n                    # Extract invoice name\n                    invoice_name = \"\"\n                    if isinstance(invoice, str):\n                        m = re.search(r'(FIN-?\\d+|FINORG-?\\d+)', invoice)\n                        if m:\n                            invoice_name = m.group(1)\n                        else:\n                            invoice_name = invoice\n                    \n                    # Extract alternative invoice name\n                    alternative_invoice_name = \"\"\n                    if isinstance(invoice, str):\n                        alt_match = re.search(r'([FP]\\d{7})', invoice)\n                        if alt_match:\n                            alternative_invoice_name = alt_match.group(1)\n                    \n                    # Format date\n                    date_fmt = date\n                    m = re.match(r'(\\d{2})/(\\d{2})/(\\d{4})', date)\n                    if m:\n                        date_fmt = f\"{m.group(1)}.{m.group(3)}\"\n\n                    # Create result item\n                    result_item = {\n                        \"accountName\": sheet_name,\n                        \"invoiceName\": invoice_name,\n                        \"fullInvoiceName\": invoice,\n                        \"date\": date_fmt,\n                        \"amount\": amount,\n                        \"item\": item,\n                        \"path\": f\"/{date_fmt}/{sheet_name}\"\n                    }\n                    \n                    if alternative_invoice_name:\n                        result_item[\"alternativeInvoiceName\"] = alternative_invoice_name\n                    \n                    results.append({\"json\": result_item})\n        except Exception as e:\n            continue\n\nreturn results"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -304
+      ],
+      "id": "c56264c5-7f65-4376-ad43-d89d1e6437af",
+      "name": "Parse XLSX with Python"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "73e11dd4-4b91-4f66-b58c-08c59bb073ff",
+              "leftValue": "={{ $json.alternativeInvoiceName }}",
+              "rightValue": false,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -400
+      ],
+      "id": "be80836b-0755-49f7-9e84-9890e1fcd3d1",
+      "name": "Check ALT number is not EMPTY"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Фільтруємо записи, виключаючи певні типи Item\nconst excludedItems = [\n    \"Bank charges\",\n    \"Tax salary\", \n    \"Exchange Gain or Loss\",\n    \"Transfer\",\n    \"Sales\"\n];\n\n// Фільтруємо вхідні дані\nconst filteredItems = $input.all().filter(item => {\n    const itemValue = item.json.item;\n    \n    // Перевіряємо чи item не входить в список виключень\n    const shouldExclude = excludedItems.some(excludedItem => \n        itemValue === excludedItem\n    );\n    \n    // Повертаємо true тільки якщо item НЕ потрібно виключати\n    return !shouldExclude;\n});\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -304
+      ],
+      "id": "22625ff2-e1f9-4c66-b94a-206f4e45e84e",
+      "name": "Exclude some Item types"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Отримуємо всі дані\nitems = _input.all()\n\n# Групуємо по fullInvoiceName\ngrouped_data = {}\nfor item in items:\n    full_invoice_name = item.json.get('fullInvoiceName', '')\n    if full_invoice_name not in grouped_data:\n        grouped_data[full_invoice_name] = []\n    grouped_data[full_invoice_name].append(item.json)\n\n# Обробляємо кожну групу\nmerged_results = []\nfor full_invoice_name, group_items in grouped_data.items():\n    if len(group_items) == 1:\n        # Якщо тільки один об'єкт, додаємо як є\n        merged_results.append(group_items[0])\n    else:\n        # Якщо кілька об'єктів, об'єднуємо їх\n        merged_item = dict(group_items[0])  # Створюємо копію словника\n        \n        # Об'єднуємо invoiceName\n        invoice_names = []\n        for item in group_items:\n            invoice_name = item.get('invoiceName', '')\n            if invoice_name and invoice_name not in invoice_names:\n                invoice_names.append(invoice_name)\n        merged_item['invoiceName'] = ', '.join(invoice_names)\n        \n        # Об'єднуємо status\n        statuses = [item.get('status', '') for item in group_items]\n        if 'OK' in statuses:\n            merged_item['status'] = 'OK'\n        else:\n            merged_item['status'] = 'NOK'\n        \n        merged_results.append(merged_item)\n\n# Повертаємо результат\nreturn [{\"json\": item} for item in merged_results]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        -208
+      ],
+      "id": "fde0934e-ddf8-4ba7-bf60-20909199f49c",
+      "name": "Merge FIN and ALT invoice statuses"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "list",
+        "path": "/Excel_input",
+        "limit": 1,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -304
+      ],
+      "id": "041b8491-8ebc-4f86-a54f-b9466d18af53",
+      "name": "Get excel file name",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "path": "=/Excel_input/{{ $json.name }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -304
+      ],
+      "id": "39cf1bca-d93c-4f38-8f5b-77176a1d15cd",
+      "name": "Download a excel file",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -304
+      ],
+      "id": "ed77aad9-41c4-4eef-917d-68e99b1e273f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "fileName": "=={{$now.toFormat(\"yyyy-MM-dd_HHmmss\")}}_{{$itemIndex}}.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2672,
+        -208
+      ],
+      "id": "63195317-54b1-4392-88ec-5897574bbe8c",
+      "name": "Convert data to excel file"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Фільтруємо записи, залишаючи тільки зі статусом \"OK\"\nconst filteredItems = $input.all().filter(item => {\n    return item.json.status === \"OK\";\n});\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        -400
+      ],
+      "id": "3dc85f4f-3cfb-4e16-8a47-2a0f1c2cee89",
+      "name": "Filter only found ALT invoices"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2224,
+        -400
+      ],
+      "id": "0de9654a-f579-4417-8185-882166a356e2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  invoiceName: $json.alternativeInvoiceName,\n  status: $json.status,\n  accountName: $json.accountName,\n  date: $json.date,\n  fileName: $json.fileName,\n  pathDisplay: $json.pathDisplay\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -592
+      ],
+      "id": "ae5e401f-ca63-4ef4-ae50-6170cdb3121d",
+      "name": "Delete unnecessary ALT invoices data"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  invoiceName: $json.invoiceName,\n  status: $json.status,\n  accountName: $json.accountName,\n  date: $json.date,\n  fileName: $json.fileName,\n  pathDisplay: $json.pathDisplay\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -208
+      ],
+      "id": "04092293-f496-45da-a1cc-29e51195b8e3",
+      "name": "Delete unnecessary FIN invoices data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        -400
+      ],
+      "id": "b6b0f58d-6b70-4321-b9f1-4a16722d967c",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3104,
+        -208
+      ],
+      "id": "139ab2e8-47de-4844-8cbb-6fd9d839040f",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "copy",
+        "path": "={{ $json.pathDisplay }}",
+        "toPath": "=/Sorted_invoices_{{ $now.toFormat(\"yyyy-MM-dd\") }}/{{ $json.date }}/{{ $json.accountName }}/{{ $json.fileName }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        -400
+      ],
+      "id": "9594bd3a-775b-4e68-9fc5-a14f99dbf906",
+      "name": "Copy and paste invoice files",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/Parsing_excel_results/results_{{ $now.toFormat(\"yyyy-MM-dd_HHmmss\") }}.xlsx",
+        "binaryData": true
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        -208
+      ],
+      "id": "f4a83adc-ff43-4bd6-bafa-4fa5e799f669",
+      "name": "Upload excel file with results to dropBox",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "9IO3oj3fGKSNpRrX",
+          "name": "Dropbox account Essay Developer OAUTH2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search using FIN number": {
+      "main": [
+        [
+          {
+            "node": "Get FIN invoice name using regexp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save FIN data before search": {
+      "main": [
+        [
+          {
+            "node": "Search using FIN number",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge FIN invoice data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get FIN invoice name using regexp": {
+      "main": [
+        [
+          {
+            "node": "Get found FIN Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get found FIN Invoice": {
+      "main": [
+        [
+          {
+            "node": "Filter unique FIN invoices again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge FIN invoice data": {
+      "main": [
+        [
+          {
+            "node": "SET 'OK' : 'NOK' status for FIN invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET 'OK' : 'NOK' status for FIN invoices": {
+      "main": [
+        [
+          {
+            "node": "Delete temp columns from FIN data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete unnecessary FIN invoices data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search using ALT number": {
+      "main": [
+        [
+          {
+            "node": "Get ALT invoice name using regexp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save ALT data before search": {
+      "main": [
+        [
+          {
+            "node": "Search using ALT number",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge FIN invoice data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ALT invoice name using regexp": {
+      "main": [
+        [
+          {
+            "node": "Get found ALT Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get found ALT Invoice": {
+      "main": [
+        [
+          {
+            "node": "Filter unique ALT invoices again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge FIN invoice data1": {
+      "main": [
+        [
+          {
+            "node": "SET 'OK' : 'NOK' status for ALT invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter unique ALT invoices": {
+      "main": [
+        [
+          {
+            "node": "Save ALT data before search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET 'OK' : 'NOK' status for ALT invoices": {
+      "main": [
+        [
+          {
+            "node": "Delete temp columns from ALT data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete unnecessary ALT invoices data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter unique FIN invoices": {
+      "main": [
+        [
+          {
+            "node": "Save FIN data before search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete temp columns from FIN data": {
+      "main": [
+        [
+          {
+            "node": "Merge FIN and ALT data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Delete temp columns from ALT data": {
+      "main": [
+        [
+          {
+            "node": "Merge FIN and ALT data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter unique FIN invoices again": {
+      "main": [
+        [
+          {
+            "node": "Merge FIN invoice data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter unique ALT invoices again": {
+      "main": [
+        [
+          {
+            "node": "Merge FIN invoice data1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge FIN and ALT data": {
+      "main": [
+        [
+          {
+            "node": "Merge FIN and ALT invoice statuses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse XLSX with Python": {
+      "main": [
+        [
+          {
+            "node": "Exclude some Item types",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check ALT number is not EMPTY": {
+      "main": [
+        [
+          {
+            "node": "Filter unique ALT invoices",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exclude some Item types": {
+      "main": [
+        [
+          {
+            "node": "Check ALT number is not EMPTY",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter unique FIN invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge FIN and ALT invoice statuses": {
+      "main": [
+        [
+          {
+            "node": "Convert data to excel file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get excel file name": {
+      "main": [
+        [
+          {
+            "node": "Download a excel file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a excel file": {
+      "main": [
+        [
+          {
+            "node": "Parse XLSX with Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get excel file name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert data to excel file": {
+      "main": [
+        [
+          {
+            "node": "Upload excel file with results to dropBox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Filter only found ALT invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete unnecessary ALT invoices data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete unnecessary FIN invoices data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter only found ALT invoices": {
+      "main": [
+        [
+          {
+            "node": "Copy and paste invoice files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy and paste invoice files": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload excel file with results to dropBox": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2f84a07d-54a1-482f-875c-02cfad95ff53",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e64ee2d090754eaf8bf7cc58dc89877463b45bd834395c2f18561dcd126634fe"
+  },
+  "id": "r2DEiNuyRsUpDiMD",
+  "tags": []
+}
