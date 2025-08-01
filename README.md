@@ -143,8 +143,8 @@ Workflow обробляє два типи інвойсів окремо:
 6. **Check ALT number is not EMPTY** - розділення на FIN та ALT потоки
 7. **Search using FIN/ALT number** - пошук інвойсів в Dropbox
 8. **Filter only found ALT invoices** - фільтрація тільки знайдених ALT інвойсів
-9. **Loop Over Items (Split In Batches)** - розбиття на групи по 10 файлів
-10. **Move invoice files to sorted folder** - переміщення знайдених файлів
+9. **Loop Over Items** - розбиття на групи по 10 файлів
+10. **Move invoice files to soted folder** - переміщення знайдених файлів
 11. **Merge FIN and ALT data** - об'єднання результатів
 12. **Convert data to excel file** - конвертація в XLSX
 13. **Upload excel file with results** - завантаження результату

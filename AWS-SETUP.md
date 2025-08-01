@@ -151,7 +151,7 @@ https://your_domain
 - **Search using FIN/ALT number** - пошук інвойсів в Dropbox
 - **Filter only found ALT invoices** - фільтрація тільки знайдених інвойсів
 - **Merge FIN and ALT data** - об'єднання результатів
-- **Move invoice files to sorted folder** - переміщення знайдених файлів
+- **Move invoice files to soted folder** - переміщення знайдених файлів
 - **Convert data to excel file** - конвертація в XLSX
 - **Upload excel file with results** - завантаження результату в `/Parsing_excel_results`
 
