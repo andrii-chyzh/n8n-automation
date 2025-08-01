@@ -25,8 +25,8 @@ docker ps
 ## Крок 2: Створення робочої директорії
 
 ```bash
-mkdir -p /opt/n8n-python-setup
-cd /opt/n8n-python-setup
+mkdir -p /opt/n8n-setup
+cd /opt/n8n-setup
 ```
 
 ## Крок 3: Створення файлів проекту
@@ -99,13 +99,8 @@ chmod +x build-and-run.sh
 cat > Dockerfile << 'EOF'
 FROM docker.n8n.io/n8nio/n8n:latest
 
-# n8n Python Code Node використовує Pyodide (WebAssembly Python)
-# і не потребує встановлення Python на сервері
-# Всі Python операції виконуються в браузері
-
 USER node
 
-# Перевіряємо, що n8n працює
 RUN n8n --version
 EOF
 ```
