@@ -9,7 +9,7 @@ docker rm n8n 2>/dev/null || true
 
 # Збираємо новий образ
 echo "🏗️  Збираємо Docker образ..."
-docker build -t n8n-with-python .
+docker build -t n8n-custom .
 
 # Запускаємо новий контейнер
 echo "🚀 Запускаємо новий контейнер..."
@@ -22,9 +22,7 @@ docker run -d -it --rm \
   -e N8N_LOG_LEVEL=error \
   -e N8N_DIAGNOSTICS_ENABLED=false \
   -v n8n_data:/home/node/.n8n \
-  n8n-with-python
+  n8n-custom
 
 echo "✅ Готово! n8n запущено"
 echo "🌐 Доступний за адресою: https://your_domain"
-echo ""
-echo "📋 Python Code Node (Pyodide) готовий до використання!"

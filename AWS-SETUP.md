@@ -36,7 +36,7 @@ cd /opt/n8n-setup
 cat > build-and-run.sh << 'EOF'
 #!/bin/bash
 
-echo "🔨 Збірка кастомного n8n образу з Python..."
+echo "🔨 Збірка n8n образу..."
 
 # Зупиняємо існуючий контейнер
 echo "⏹️  Зупиняємо існуючий контейнер..."
@@ -45,7 +45,7 @@ docker rm n8n 2>/dev/null || true
 
 # Збираємо новий образ
 echo "🏗️  Збираємо Docker образ..."
-docker build -t n8n-with-python .
+docker build -t n8n-custom .
 
 # Запускаємо новий контейнер
 echo "🚀 Запускаємо новий контейнер..."
@@ -55,12 +55,12 @@ docker run -d -it --rm \
   -e N8N_SECURE_COOKIE=false \
   -e WEBHOOK_URL=https://your_domain \
   -v n8n_data:/home/node/.n8n \
-  n8n-with-python
+  n8n-custom
 
 echo "✅ Готово! Self hosted n8n запущено"
 echo "🌐 Доступний за адресою: https://your_domain"
 echo ""
-echo "📋 Python Code Node (Pyodide) готовий до використання!"
+echo "📋 Code Node готовий до використання!"
 EOF
 
 chmod +x build-and-run.sh
@@ -132,7 +132,7 @@ https://your_domain
 ### Імпорт воркфлоу
 1. Натисніть "Import from file"
 2. Виберіть файл `FIN Flow.json`
-3. Воркфлоу буде імпортовано з готовим Python кодом
+3. Воркфлоу буде імпортовано з готовим кодом
 
 ### Налаштування credentials
 1. Перейдіть до Settings > Credentials
@@ -147,7 +147,7 @@ https://your_domain
 - **Manual Trigger** - запуск воркфлоу
 - **Get excel file name** - отримання списку файлів з `/Excel_input`
 - **Download a excel file** - завантаження XLSX файлу
-- **Parse XLSX with Python** - парсинг даних
+- **Parse XLSX** - парсинг даних
 - **Search using FIN/ALT number** - пошук інвойсів в Dropbox
 - **Filter only found ALT invoices** - фільтрація тільки знайдених інвойсів
 - **Merge FIN and ALT data** - об'єднання результатів
