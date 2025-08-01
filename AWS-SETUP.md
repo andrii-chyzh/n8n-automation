@@ -78,12 +78,12 @@ docker run -d -it --rm \
   --name n8n \
   -p 80:5678 \
   -e N8N_SECURE_COOKIE=false \
-  -e WEBHOOK_URL=https://n8n.es-tech.dev \
+  -e WEBHOOK_URL=https://your_domain \
   -v n8n_data:/home/node/.n8n \
   n8n-with-python
 
 echo "✅ Готово! n8n запущено з Python підтримкою"
-echo "🌐 Доступний за адресою: https://n8n.es-tech.dev"
+echo "🌐 Доступний за адресою: https://your_domain"
 echo ""
 echo "🔍 Перевірка встановлення Python:"
 docker exec -it n8n python3 --version
@@ -135,7 +135,7 @@ docker ps
 docker logs n8n --tail 20
 
 # Перевірте доступність n8n
-curl -I https://n8n.es-tech.dev
+curl -I https://your_domain
 ```
 
 ## Крок 5: Налаштування Dropbox
@@ -162,7 +162,7 @@ curl -I https://n8n.es-tech.dev
 ### Відкрийте n8n UI
 ```bash
 # Перейдіть до n8n в браузері
-https://n8n.es-tech.dev
+https://your_domain
 ```
 
 ### Імпорт воркфлоу
