@@ -160,6 +160,8 @@ Workflow обробляє два типи інвойсів окремо:
 
 **📋 Детальний опис кожного кроку:** [WORKFLOW-STEPS.md](./docs/WORKFLOW-STEPS.md)
 
+**📋 Вимоги та вартість:** [REQUIREMENTS.md](./docs/REQUIREMENTS.md)
+
 ![Workflow Diagram](./images/workflow.jpg)
 
 ## Приклади
