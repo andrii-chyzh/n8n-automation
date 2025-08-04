@@ -15,7 +15,7 @@
       "typeVersion": 1,
       "position": [
         656,
-        64
+        56
       ],
       "id": "a513addd-5b66-47e1-a55a-e6aaed9b41cb",
       "name": "Search using FIN number",
@@ -99,7 +99,7 @@
       "typeVersion": 2,
       "position": [
         880,
-        64
+        56
       ],
       "id": "92de1d84-abeb-4610-85fe-1300789a6110",
       "name": "Get FIN invoice name using regexp"
@@ -113,7 +113,7 @@
       "typeVersion": 2,
       "position": [
         1104,
-        64
+        56
       ],
       "id": "0511bcaf-1474-4647-bfc3-95fd1f9170ce",
       "name": "Get found FIN Invoice"
@@ -236,7 +236,7 @@
       "typeVersion": 1,
       "position": [
         656,
-        -288
+        -280
       ],
       "id": "7244680d-fa36-4e12-81a1-cf98afe923b5",
       "name": "Search using ALT number",
@@ -256,7 +256,7 @@
       "typeVersion": 2,
       "position": [
         880,
-        -288
+        -280
       ],
       "id": "eb6c9038-6163-4f8e-bd48-74f481b62986",
       "name": "Get ALT invoice name using regexp"
@@ -270,7 +270,7 @@
       "typeVersion": 2,
       "position": [
         1104,
-        -288
+        -280
       ],
       "id": "e8f1fbf2-e5cb-4210-a90e-fc1554afa1db",
       "name": "Get found ALT Invoice"
@@ -620,8 +620,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        3120,
-        -96
+        -1136,
+        304
       ],
       "id": "dbf43416-2350-4add-b484-a8c3cdd9e058",
       "name": "Send successful automation email",
@@ -659,6 +659,19 @@
           "name": "Dropbox account Essay Developer OAUTH2"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Фільтруємо записи, залишаючи тільки FIN та FINORG інвойси\nconst filteredItems = $input.all().filter(item => {\n    const invoiceName = item.json.invoiceName || '';\n    \n    // Використовуємо regex для пошуку FIN- або FINORG- форматів\n    const finMatch = invoiceName.match(/(FIN-?\\d+|FINORG-?\\d+)/);\n    \n    // Повертаємо true тільки якщо знайдено FIN або FINORG формат\n    return !!finMatch;\n});\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "83d1d9c3-2572-4fa7-a044-a084b578dbcb",
+      "name": "Exclude not FIN/FINORG invoice names"
     }
   ],
   "pinData": {},
@@ -897,7 +910,7 @@
             "index": 0
           },
           {
-            "node": "Filter unique FIN invoices",
+            "node": "Exclude not FIN/FINORG invoice names",
             "type": "main",
             "index": 0
           }
@@ -1058,13 +1071,24 @@
           }
         ]
       ]
+    },
+    "Exclude not FIN/FINORG invoice names": {
+      "main": [
+        [
+          {
+            "node": "Filter unique FIN invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "3d86994c-d3ef-4675-8fe2-4eaee348ade0",
+  "versionId": "66cf5035-d822-44be-b549-850fbbe07c76",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e64ee2d090754eaf8bf7cc58dc89877463b45bd834395c2f18561dcd126634fe"

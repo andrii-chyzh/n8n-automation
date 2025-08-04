@@ -147,15 +147,16 @@ Workflow обробляє два типи інвойсів окремо:
 3. **Download a excel file** - завантаження XLSX файлу
 4. **Parse XLSX with Python** - парсинг даних
 5. **Exclude some Item types** - фільтрація небажаних типів
-6. **Check ALT number is not EMPTY** - розділення на FIN та ALT потоки
-7. **Search using FIN/ALT number** - пошук інвойсів в Dropbox
-8. **Filter only found ALT invoices** - фільтрація тільки знайдених ALT інвойсів
-9. **Loop Over Items** - розбиття на групи по 10 файлів
-10. **Move invoice files to soted folder** - переміщення знайдених файлів
-11. **Merge FIN and ALT data** - об'єднання результатів
-12. **Convert data to excel file** - конвертація в XLSX
-13. **Upload excel file with results** - завантаження результату
-14. **Send successful automation email** - email повідомлення про завершення
+6. **Exclude not FIN/FINORG invoice names** - фільтрація тільки FIN та FINORG інвойсів
+7. **Check ALT number is not EMPTY** - розділення на FIN та ALT потоки
+8. **Search using FIN/ALT number** - пошук інвойсів в Dropbox
+9. **Filter only found ALT invoices** - фільтрація тільки знайдених ALT інвойсів
+10. **Loop Over Items** - розбиття на групи по 10 файлів
+11. **Move invoice files to soted folder** - переміщення знайдених файлів
+12. **Merge FIN and ALT data** - об'єднання результатів
+13. **Convert data to excel file** - конвертація в XLSX
+14. **Upload excel file with results** - завантаження результату
+15. **Send successful automation email** - email повідомлення про завершення
 
 **📋 Детальний опис кожного кроку:** [WORKFLOW-STEPS.md](./docs/WORKFLOW-STEPS.md)
 

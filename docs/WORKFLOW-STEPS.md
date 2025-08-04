@@ -29,159 +29,164 @@
 **Призначення:** Фільтрує записи, виключаючи небажані типи транзакцій: "Bank charges", "Tax salary", "Exchange Gain or Loss", "Transfer", "Sales", "Payment of debts to the director", "Advance CIT 2024", "Tax liability".  
 **Вихід:** Відфільтровані записи без небажаних типів.
 
-### 6. Check ALT number is not EMPTY
+### 6. Exclude not FIN/FINORG invoice names
+**Тип:** Code (JavaScript)  
+**Призначення:** Фільтрує записи, залишаючи тільки FIN та FINORG інвойси. Використовує regex `/(FIN-?\d+|FINORG-?\d+)/` для пошуку правильних форматів.  
+**Вихід:** Тільки записи з invoiceName у форматі FIN-12345 або FINORG-67890.
+
+### 37. Check ALT number is not EMPTY
 **Тип:** IF  
 **Призначення:** Розділяє потік даних на дві гілки: записи з альтернативними номерами інвойсів (ALT) та записи без них (FIN).  
 **Умова:** `alternativeInvoiceName` не порожній.
 
-### 7. Filter unique ALT invoices
+### 37. Filter unique ALT invoices
 **Тип:** Code (JavaScript)  
 **Призначення:** Видаляє дублікати альтернативних інвойсів, залишаючи тільки унікальні значення `alternativeInvoiceName`.  
 **Вихід:** Унікальні альтернативні інвойси.
 
-### 8. Filter unique FIN invoices
+### 37. Filter unique FIN invoices
 **Тип:** Code (JavaScript)  
 **Призначення:** Видаляє дублікати FIN інвойсів, залишаючи тільки унікальні значення `invoiceName`.  
 **Вихід:** Унікальні FIN інвойси.
 
-### 9. Save ALT data before search
+### 37. Save ALT data before search
 **Тип:** Set  
 **Призначення:** Зберігає дані альтернативних інвойсів перед пошуком. Створює копію для подальшого використання в merge операціях.  
 **Вихід:** Збережені дані ALT інвойсів.
 
-### 10. Save FIN data before search
+### 37. Save FIN data before search
 **Тип:** Set  
 **Призначення:** Зберігає дані FIN інвойсів перед пошуком. Створює копію для подальшого використання в merge операціях.  
 **Вихід:** Збережені дані FIN інвойсів.
 
-### 11. Search using ALT number
+### 37. Search using ALT number
 **Тип:** Dropbox (Search)  
 **Призначення:** Шукає файли в папці `/Invoices` на Dropbox, використовуючи `alternativeInvoiceName` як пошуковий запит.  
 **Особливість:** Увімкнено "Always Output Data" для обробки випадків, коли нічого не знайдено.  
 **Вихід:** Знайдені файли або порожній результат.
 
-### 12. Search using FIN number
+### 37. Search using FIN number
 **Тип:** Dropbox (Search)  
 **Призначення:** Шукає файли в папці `/Invoices` на Dropbox, використовуючи `invoiceName` як пошуковий запит.  
 **Особливість:** Увімкнено "Always Output Data" для обробки випадків, коли нічого не знайдено.  
 **Вихід:** Знайдені файли або порожній результат.
 
-### 13. Get ALT invoice name using regexp
+### 37. Get ALT invoice name using regexp
 **Тип:** Code (JavaScript) - Run Once for All Items  
 **Призначення:** Обробляє результати пошуку ALT інвойсів. Використовує regexp `[FP]\d{3,}` для витягування альтернативних номерів з назв файлів. Обробляє випадки, коли пошук не знайшов результатів.  
 **Вихід:** Структуровані дані з `foundInvoice`, `fileName`, `pathDisplay`.
 
-### 14. Get FIN invoice name using regexp
+### 37. Get FIN invoice name using regexp
 **Тип:** Code (JavaScript) - Run Once for All Items  
 **Призначення:** Обробляє результати пошуку FIN інвойсів. Використовує regexp `(FIN(?:ORG)?-\d+)` для витягування FIN номерів з назв файлів. Обробляє випадки, коли пошук не знайшов результатів.  
 **Вихід:** Структуровані дані з `foundInvoice`, `fileName`, `pathDisplay`.
 
-### 15. Get found ALT Invoice
+### 37. Get found ALT Invoice
 **Тип:** Code (JavaScript)  
 **Призначення:** Форматує дані знайдених ALT інвойсів для подальшої обробки.  
 **Вихід:** Очищені дані з `foundInvoice`, `fileName`, `pathDisplay`.
 
-### 16. Get found FIN Invoice
+### 37. Get found FIN Invoice
 **Тип:** Code (JavaScript)  
 **Призначення:** Форматує дані знайдених FIN інвойсів для подальшої обробки.  
 **Вихід:** Очищені дані з `foundInvoice`, `fileName`, `pathDisplay`.
 
-### 17. Merge ALT invoice data
+### 37. Merge ALT invoice data
 **Тип:** Merge  
 **Призначення:** Об'єднує оригінальні дані ALT інвойсів з результатами пошуку. Використовує Left Join для збереження всіх оригінальних записів.  
 **Поля для з'єднання:** `alternativeInvoiceName` ↔ `foundInvoice`.
 
-### 18. Merge FIN invoice data
+### 37. Merge FIN invoice data
 **Тип:** Merge  
 **Призначення:** Об'єднує оригінальні дані FIN інвойсів з результатами пошуку. Використовує Left Join для збереження всіх оригінальних записів.  
 **Поля для з'єднання:** `invoiceName` ↔ `foundInvoice`.
 
-### 19. SET 'OK' : 'NOK' status for ALT invoices
+### 37. SET 'OK' : 'NOK' status for ALT invoices
 **Тип:** Code (JavaScript) - Run Once for All Items  
 **Призначення:** Встановлює статус "OK" для знайдених ALT інвойсів та "NOK" для ненайдених. Додає `fileName` та `pathDisplay` для знайдених файлів.  
 **Вихід:** Всі ALT інвойси зі статусами та інформацією про файли.
 
-### 20. SET 'OK' : 'NOK' status for FIN invoices
+### 37. SET 'OK' : 'NOK' status for FIN invoices
 **Тип:** Code (JavaScript) - Run Once for All Items  
 **Призначення:** Встановлює статус "OK" для знайдених FIN інвойсів та "NOK" для ненайдених. Додає `fileName` та `pathDisplay` для знайдених файлів.  
 **Вихід:** Всі FIN інвойси зі статусами та інформацією про файли.
 
-### 21. Delete temp columns from ALT data
+### 37. Delete temp columns from ALT data
 **Тип:** Code (JavaScript)  
 **Призначення:** Видаляє тимчасові колонки з даних ALT інвойсів, залишаючи тільки необхідні поля для фінального результату.  
 **Вихід:** Очищені дані ALT інвойсів.
 
-### 22. Delete temp columns from FIN data
+### 37. Delete temp columns from FIN data
 **Тип:** Code (JavaScript)  
 **Призначення:** Видаляє тимчасові колонки з даних FIN інвойсів, залишаючи тільки необхідні поля для фінального результату.  
 **Вихід:** Очищені дані FIN інвойсів.
 
-### 23. Delete unnecessary ALT invoices data
+### 37. Delete unnecessary ALT invoices data
 **Тип:** Code (JavaScript)  
 **Призначення:** Форматує дані ALT інвойсів для фінального виводу, перейменовуючи поля та видаляючи зайві.  
 **Вихід:** Фінальний формат даних ALT інвойсів.
 
-### 24. Delete unnecessary FIN invoices data
+### 37. Delete unnecessary FIN invoices data
 **Тип:** Code (JavaScript)  
 **Призначення:** Форматує дані FIN інвойсів для фінального виводу, перейменовуючи поля та видаляючи зайві.  
 **Вихід:** Фінальний формат даних FIN інвойсів.
 
-### 25. Merge
+### 37. Merge
 **Тип:** Merge  
 **Призначення:** Об'єднує дані FIN та ALT інвойсів в один потік для подальшої обробки.  
 **Вихід:** Об'єднані дані всіх інвойсів.
 
-### 26. Filter only found ALT invoices
+### 37. Filter only found ALT invoices
 **Тип:** Code (JavaScript)  
 **Призначення:** Фільтрує тільки знайдені ALT інвойси (зі статусом "OK") для копіювання файлів.  
 **Вихід:** Тільки знайдені ALT інвойси.
 
-### 27. Loop Over Items (Split In Batches)
+### 37. Loop Over Items (Split In Batches)
 **Тип:** Split In Batches  
 **Призначення:** Розбиває знайдені інвойси на групи по 10 файлів для уникнення rate limiting при операціях з Dropbox.  
 **Налаштування:** Batch Size = 10, Reset = false.  
 **Вихід:** Групи по 10 файлів для обробки.
 
-### 28. Move invoice files to soted folder
+### 37. Move invoice files to soted folder
 **Тип:** Dropbox (Move)  
 **Призначення:** Переміщує знайдені файли інвойсів у структуровані папки на Dropbox.  
 **Шлях призначення:** `/Sorted_invoices_YYYY-MM-DD/дата/рахунок/назва_файлу`  
 **Особливість:** Використовує операцію Move для економії місця на Dropbox.
 
-### 29. Merge FIN and ALT data
+### 37. Merge FIN and ALT data
 **Тип:** Merge  
 **Призначення:** Об'єднує фінальні дані FIN та ALT інвойсів для створення звіту.  
 **Вихід:** Повний набір даних для експорту.
 
-### 30. Merge FIN and ALT invoice statuses
+### 37. Merge FIN and ALT invoice statuses
 **Тип:** Code (Python)  
 **Призначення:** Об'єднує дублікати інвойсів за `fullInvoiceName`. Якщо кілька записів мають однаковий `fullInvoiceName`, об'єднує `invoiceName` через кому та встановлює статус "OK" якщо хоча б один запис має "OK".  
 **Вихід:** Дедупліковані дані з об'єднаними статусами.
 
-### 31. Convert data to excel file
+### 37. Convert data to excel file
 **Тип:** Convert to File  
 **Призначення:** Конвертує фінальні дані в XLSX файл з timestamp у назві.  
 **Вихід:** XLSX файл з результатами.
 
-### 32. Upload excel file with results to dropBox
+### 37. Upload excel file with results to dropBox
 **Тип:** Dropbox (Upload)  
 **Призначення:** Завантажує XLSX файл з результатами в папку `/Parsing_excel_results` на Dropbox.  
 **Вихід:** Завантажений файл з результатами.
 
-### 33. Send successful automation email
+### 37. Send successful automation email
 **Тип:** Gmail  
 **Призначення:** Відправляє email повідомлення про успішне завершення автоматизації з інформацією про розташування результатів.  
 **Вихід:** Email повідомлення.
 
-### 34. No Operation, do nothing
+### 37. No Operation, do nothing
 **Тип:** No Operation  
 **Призначення:** Заглушка для записів без альтернативних номерів інвойсів.
 
-### 35. No Operation, do nothing1
+### 37. No Operation, do nothing1
 **Тип:** No Operation  
 **Призначення:** Заглушка після завершення циклу копіювання файлів.
 
-### 36. No Operation, do nothing2
+### 37. No Operation, do nothing2
 **Тип:** No Operation  
 **Призначення:** Заглушка після завантаження результатів.
 
