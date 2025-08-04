@@ -15,7 +15,7 @@
       "typeVersion": 1,
       "position": [
         656,
-        56
+        64
       ],
       "id": "a513addd-5b66-47e1-a55a-e6aaed9b41cb",
       "name": "Search using FIN number",
@@ -99,7 +99,7 @@
       "typeVersion": 2,
       "position": [
         880,
-        56
+        64
       ],
       "id": "92de1d84-abeb-4610-85fe-1300789a6110",
       "name": "Get FIN invoice name using regexp"
@@ -113,7 +113,7 @@
       "typeVersion": 2,
       "position": [
         1104,
-        56
+        64
       ],
       "id": "0511bcaf-1474-4647-bfc3-95fd1f9170ce",
       "name": "Get found FIN Invoice"
@@ -236,7 +236,7 @@
       "typeVersion": 1,
       "position": [
         656,
-        -280
+        -288
       ],
       "id": "7244680d-fa36-4e12-81a1-cf98afe923b5",
       "name": "Search using ALT number",
@@ -256,7 +256,7 @@
       "typeVersion": 2,
       "position": [
         880,
-        -280
+        -288
       ],
       "id": "eb6c9038-6163-4f8e-bd48-74f481b62986",
       "name": "Get ALT invoice name using regexp"
@@ -270,7 +270,7 @@
       "typeVersion": 2,
       "position": [
         1104,
-        -280
+        -288
       ],
       "id": "e8f1fbf2-e5cb-4210-a90e-fc1554afa1db",
       "name": "Get found ALT Invoice"
@@ -304,7 +304,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  date: $json.date,\n  invoiceName: $json.invoiceName,\n  status: $json.status,\n  fullInvoiceName: $json.fullInvoiceName,\n  account: $json.accountName,\n  item: $json.item\n};"
+        "jsCode": "return {\n  date: $json.date,\n  invoiceName: $json.alternativeInvoiceName,\n  status: $json.status,\n  fullInvoiceName: $json.fullInvoiceName,\n  account: $json.accountName,\n  item: $json.item\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -620,8 +620,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        -1136,
-        304
+        3136,
+        -96
       ],
       "id": "dbf43416-2350-4add-b484-a8c3cdd9e058",
       "name": "Send successful automation email",
@@ -1088,7 +1088,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "66cf5035-d822-44be-b549-850fbbe07c76",
+  "versionId": "a5dbcd2e-19ed-4afe-be38-77713130e0c3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e64ee2d090754eaf8bf7cc58dc89877463b45bd834395c2f18561dcd126634fe"
