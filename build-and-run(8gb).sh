@@ -15,11 +15,11 @@ docker build -t n8n-custom .
 echo "🚀 Запускаємо новий контейнер..."
 docker run -d -it --rm \
   --name n8n \
-  --memory=1.8g \
-  --memory-swap=2g \
+  --memory=6g \
+  --memory-swap=8g \
   -p 80:5678 \
   -e N8N_SECURE_COOKIE=false \
-  -e WEBHOOK_URL=https://n8n.es-tech.dev \
+  -e WEBHOOK_URL=https://your_domain \
   -e N8N_METRICS=false \
   -e N8N_LOG_LEVEL=error \
   -e N8N_DIAGNOSTICS_ENABLED=false \
@@ -27,4 +27,4 @@ docker run -d -it --rm \
   n8n-custom
 
 echo "✅ Готово! n8n запущено"
-echo "�� Доступний за адресою: https://n8n.es-tech.dev"
+echo "�� Доступний за адресою: https://your_domain"

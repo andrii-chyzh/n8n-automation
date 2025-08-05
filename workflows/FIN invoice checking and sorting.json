@@ -1,5 +1,5 @@
 {
-  "name": "FIN invoice checking and sorting",
+  "name": "FIN invoice checking and sorting DUPLICATES FIX",
   "nodes": [
     {
       "parameters": {
@@ -8,16 +8,16 @@
         "query": "={{$json.invoiceName}}",
         "returnAll": true,
         "filters": {
-          "path": "=/Invoices"
+          "path": "/Invoices"
         }
       },
       "type": "n8n-nodes-base.dropbox",
       "typeVersion": 1,
       "position": [
         656,
-        64
+        56
       ],
-      "id": "a513addd-5b66-47e1-a55a-e6aaed9b41cb",
+      "id": "6586d844-b5a9-476b-804d-90831055947d",
       "name": "Search using FIN number",
       "alwaysOutputData": true,
       "credentials": {
@@ -35,7 +35,7 @@
         208,
         -208
       ],
-      "id": "fc47d6f7-e14e-409c-be2c-43a801b1310f",
+      "id": "dcd61c57-12a3-4781-87cf-72ac756107ac",
       "name": "No Operation, do nothing"
     },
     {
@@ -88,20 +88,20 @@
         432,
         -16
       ],
-      "id": "6c9bfa30-97ae-423d-82bb-62f1ff82b3e6",
+      "id": "3078f616-b23c-4f49-86df-62dbb32c44b2",
       "name": "Save FIN data before search"
     },
     {
       "parameters": {
-        "jsCode": "// Отримуємо всі дані\nconst items = $input.all();\n\n// Якщо прийшов порожній результат (1 item без fileName)\nif (items.length === 1 && !items[0].json.name) {\n    // Отримуємо всі FIN інвойси з \"Save FIN data before search\"\n    const allFinInvoices = $('Save FIN data before search').all();\n    \n    // Повертаємо пусті результати для всіх FIN інвойсів\n    return allFinInvoices.map(finInvoice => ({\n        foundInvoice: null,\n        fileName: '',\n        pathDisplay: ''\n    }));\n}\n\n// Якщо є результати пошуку, обробляємо кожен\nreturn items.map(item => {\n    const fileName = item.json.name || '';\n    \n    // Пошук шаблону FIN-xxxxx або FINORG-xxxxx\n    const match = fileName.match(/(FIN(?:ORG)?-\\d+)/);\n    \n    // Повертаємо знайдене ім'я інвойсу або null\n    return {\n        foundInvoice: match ? match[1] : null,\n        fileName: item.json.name,\n        pathDisplay: item.json.path_display\n    };\n});"
+        "jsCode": "// Отримуємо всі дані\nconst items = $input.all();\n\n// Якщо прийшов порожній результат (1 item без fileName)\nif (items.length === 1 && !items[0].json.name) {\n    // Отримуємо всі FIN інвойси з \"Save FIN data before search\"\n    const allFinInvoices = $('Save FIN data before search').all();\n    \n    // Повертаємо пусті результати для всіх FIN інвойсів\n    return allFinInvoices.map(finInvoice => ({\n        foundInvoice: null,\n        fileName: '',\n        pathDisplay: ''\n    }));\n}\n\n// Якщо є результати пошуку, обробляємо кожен\nconst results = [];\nconst processedFiles = new Set(); // Для дедуплікації\n\nitems.forEach(item => {\n    const fileName = item.json.name || '';\n    const pathDisplay = item.json.path_display || '';\n    \n    // Створюємо унікальний ключ для файлу\n    const fileKey = `${fileName}|${pathDisplay}`;\n    \n    // Пропускаємо якщо файл вже оброблений\n    if (processedFiles.has(fileKey)) {\n        return;\n    }\n    \n    processedFiles.add(fileKey);\n    \n    // Пошук ВСІХ шаблонів FIN-xxxxx або FINORG-xxxxx в назві файлу\n    const matches = fileName.match(/(FIN(?:ORG)?-\\d+)/g);\n    \n    if (matches && matches.length > 0) {\n        // Якщо знайдено кілька інвойсів, створюємо окремий запис для кожного\n        matches.forEach(match => {\n            results.push({\n                foundInvoice: match,\n                fileName: fileName,\n                pathDisplay: pathDisplay\n            });\n        });\n    } else {\n        // Якщо не знайдено жодного інвойсу\n        results.push({\n            foundInvoice: null,\n            fileName: fileName,\n            pathDisplay: pathDisplay\n        });\n    }\n});\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         880,
-        64
+        56
       ],
-      "id": "92de1d84-abeb-4610-85fe-1300789a6110",
+      "id": "9c0ed423-992d-4883-925d-0ebdce669048",
       "name": "Get FIN invoice name using regexp"
     },
     {
@@ -113,9 +113,9 @@
       "typeVersion": 2,
       "position": [
         1104,
-        64
+        56
       ],
-      "id": "0511bcaf-1474-4647-bfc3-95fd1f9170ce",
+      "id": "99e0a460-a5b9-4e0a-8a04-0690c6d979a1",
       "name": "Get found FIN Invoice"
     },
     {
@@ -139,12 +139,12 @@
         1328,
         -16
       ],
-      "id": "95fbe262-564f-4933-84d8-ad4741a69c66",
+      "id": "3173a45e-7771-4afa-b605-30f8066af862",
       "name": "Merge FIN invoice data"
     },
     {
       "parameters": {
-        "jsCode": "// Отримуємо всі FIN інвойси з \"Save FIN data before search\"\nconst allFinInvoices = $('Save FIN data before search').all();\n\n// Отримуємо результати merge\nconst mergeResults = $input.all();\n\n// Створюємо мапу знайдених інвойсів, зберігаючи fileName та pathDisplay\nconst foundInvoiceMap = {};\nmergeResults.forEach(item => {\n    const finInvoiceName = item.json.foundInvoice; // Це invoiceName зі знайденого файлу\n    if (finInvoiceName) {\n        foundInvoiceMap[finInvoiceName] = {\n            fileName: item.json.fileName,\n            pathDisplay: item.json.pathDisplay\n        };\n    }\n});\n\n// Обробляємо всі FIN інвойси\nreturn allFinInvoices.map(finInvoice => {\n    const finInvoiceName = finInvoice.json.invoiceName;\n    const foundData = foundInvoiceMap[finInvoiceName]; // Отримуємо об'єкт {fileName, pathDisplay} або undefined\n\n    const isFound = !!foundData; // Перевіряємо, чи були знайдені дані\n\n    const outputItem = {\n        ...finInvoice.json, // Копіюємо всі оригінальні властивості з Save FIN data before search\n        status: isFound ? 'OK' : 'NOK'\n    };\n\n    // Якщо інвойс був знайдений, додаємо fileName та pathDisplay\n    if (isFound) {\n        outputItem.fileName = foundData.fileName;\n        outputItem.pathDisplay = foundData.pathDisplay;\n    } else {\n        // Якщо інвойс не знайдено, встановлюємо fileName та pathDisplay як null\n        outputItem.fileName = null;\n        outputItem.pathDisplay = null;\n    }\n\n    return outputItem;\n});"
+        "jsCode": "// Отримуємо всі FIN інвойси з \"Save FIN data before search\"\nconst allFinInvoices = $('Save FIN data before search').all();\n\n// Отримуємо результати merge\nconst mergeResults = $input.all();\n\n// Створюємо мапу знайдених інвойсів, зберігаючи всі знайдені файли для кожного invoiceName\nconst foundInvoiceMap = {};\nmergeResults.forEach(item => {\n    const finInvoiceName = item.json.foundInvoice; // Це invoiceName зі знайденого файлу\n    if (finInvoiceName) {\n        // Якщо це перший файл для цього invoiceName, створюємо масив\n        if (!foundInvoiceMap[finInvoiceName]) {\n            foundInvoiceMap[finInvoiceName] = [];\n        }\n        \n        // Додаємо файл до масиву\n        foundInvoiceMap[finInvoiceName].push({\n            fileName: item.json.fileName,\n            pathDisplay: item.json.pathDisplay\n        });\n    }\n});\n\n// Обробляємо всі FIN інвойси\nconst results = [];\nallFinInvoices.forEach(finInvoice => {\n    const finInvoiceName = finInvoice.json.invoiceName;\n    const foundFiles = foundInvoiceMap[finInvoiceName]; // Отримуємо масив файлів або undefined\n\n    const isFound = !!foundFiles && foundFiles.length > 0; // Перевіряємо, чи були знайдені дані\n\n    if (isFound && foundFiles.length === 1) {\n        // Якщо знайдено тільки один файл - стандартна поведінка\n        const foundData = foundFiles[0];\n        const outputItem = {\n            ...finInvoice.json, // Копіюємо всі оригінальні властивості з Save FIN data before search\n            status: 'OK',\n            fileName: foundData.fileName,\n            pathDisplay: foundData.pathDisplay\n        };\n        results.push(outputItem);\n    } else if (isFound && foundFiles.length > 1) {\n        // Якщо знайдено кілька файлів - створюємо окремий запис для кожного файлу\n        foundFiles.forEach((foundData, index) => {\n            const outputItem = {\n                ...finInvoice.json, // Копіюємо всі оригінальні властивості з Save FIN data before search\n                status: 'OK',\n                fileName: foundData.fileName,\n                pathDisplay: foundData.pathDisplay\n            };\n            results.push(outputItem);\n        });\n    } else {\n        // Якщо інвойс не знайдено\n        const outputItem = {\n            ...finInvoice.json, // Копіюємо всі оригінальні властивості з Save FIN data before search\n            status: 'NOK',\n            fileName: null,\n            pathDisplay: null\n        };\n        results.push(outputItem);\n    }\n});\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -152,7 +152,7 @@
         1552,
         -16
       ],
-      "id": "5c263332-8f17-48f1-bd60-817a3ec1329a",
+      "id": "6a571bae-aace-4e55-8a32-6ad3f00d6b4c",
       "name": "SET 'OK' : 'NOK' status for FIN invoices"
     },
     {
@@ -166,7 +166,7 @@
         1776,
         80
       ],
-      "id": "81bde6ed-65ae-4971-b096-4760f1793c1e",
+      "id": "a0c9db84-6449-4f84-9b6e-5d63c864df4d",
       "name": "Delete temp columns from FIN data"
     },
     {
@@ -219,7 +219,7 @@
         432,
         -448
       ],
-      "id": "e0e65ee3-aa45-4d5d-b9f6-aff2c1c11f4c",
+      "id": "6a108677-277e-4d6e-be39-19c8ef23700e",
       "name": "Save ALT data before search"
     },
     {
@@ -229,16 +229,16 @@
         "query": "={{$json.alternativeInvoiceName}}",
         "returnAll": true,
         "filters": {
-          "path": "=/Invoices"
+          "path": "/Invoices"
         }
       },
       "type": "n8n-nodes-base.dropbox",
       "typeVersion": 1,
       "position": [
         656,
-        -288
+        -280
       ],
-      "id": "7244680d-fa36-4e12-81a1-cf98afe923b5",
+      "id": "7fd23784-06f0-45cb-a94a-61be8d556678",
       "name": "Search using ALT number",
       "alwaysOutputData": true,
       "credentials": {
@@ -250,15 +250,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// Отримуємо всі дані\nconst items = $input.all();\n\n// Якщо прийшов порожній результат (1 item без fileName)\nif (items.length === 1 && !items[0].json.name) {\n    // Отримуємо всі альтернативні інвойси з \"Save ALT data before search\"\n    const allAltInvoices = $('Save ALT data before search').all();\n    \n    // Повертаємо пусті результати для всіх альтернативних інвойсів\n    return allAltInvoices.map(altInvoice => ({\n        foundInvoice: null,\n        fileName: '',\n        pathDisplay: ''\n    }));\n}\n\n// Якщо є результати пошуку, обробляємо кожен\nreturn items.map(item => {\n    const fileName = item.json.name || '';\n    \n    // Пошук альтернативного формату: F або P + 3+ цифри\n    const match = fileName.match(/[FP]\\d{3,}/);\n    \n    // Повертаємо знайдене альтернативне ім'я інвойсу або null\n    return {\n        foundInvoice: match ? match[0] : null,\n        fileName: item.json.name,\n        pathDisplay: item.json.path_display\n    };\n});"
+        "jsCode": "// Отримуємо всі дані\nconst items = $input.all();\n\n// Якщо прийшов порожній результат (1 item без fileName)\nif (items.length === 1 && !items[0].json.name) {\n    // Отримуємо всі альтернативні інвойси з \"Save ALT data before search\"\n    const allAltInvoices = $('Save ALT data before search').all();\n    \n    // Повертаємо пусті результати для всіх альтернативних інвойсів\n    return allAltInvoices.map(altInvoice => ({\n        foundInvoice: null,\n        fileName: '',\n        pathDisplay: ''\n    }));\n}\n\n// Якщо є результати пошуку, обробляємо кожен\nconst results = [];\nconst processedFiles = new Set(); // Для дедуплікації\n\nitems.forEach(item => {\n    const fileName = item.json.name || '';\n    const pathDisplay = item.json.path_display || '';\n    \n    // Створюємо унікальний ключ для файлу\n    const fileKey = `${fileName}|${pathDisplay}`;\n    \n    // Пропускаємо якщо файл вже оброблений\n    if (processedFiles.has(fileKey)) {\n        return;\n    }\n    \n    processedFiles.add(fileKey);\n    \n    // Пошук ВСІХ альтернативних форматів: F або P + 3+ цифри\n    const matches = fileName.match(/[FP]\\d{3,}/g);\n    \n    if (matches && matches.length > 0) {\n        // Якщо знайдено кілька інвойсів, створюємо окремий запис для кожного\n        matches.forEach(match => {\n            results.push({\n                foundInvoice: match,\n                fileName: fileName,\n                pathDisplay: pathDisplay\n            });\n        });\n    } else {\n        // Якщо не знайдено жодного інвойсу\n        results.push({\n            foundInvoice: null,\n            fileName: fileName,\n            pathDisplay: pathDisplay\n        });\n    }\n});\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         880,
-        -288
+        -280
       ],
-      "id": "eb6c9038-6163-4f8e-bd48-74f481b62986",
+      "id": "e687eec8-a400-4b44-9f57-c1dc6141a95c",
       "name": "Get ALT invoice name using regexp"
     },
     {
@@ -270,14 +270,14 @@
       "typeVersion": 2,
       "position": [
         1104,
-        -288
+        -280
       ],
-      "id": "e8f1fbf2-e5cb-4210-a90e-fc1554afa1db",
+      "id": "a424bc64-ae16-4768-9f67-0a702ab8e55a",
       "name": "Get found ALT Invoice"
     },
     {
       "parameters": {
-        "jsCode": "// Отримуємо всі альтернативні інвойси з \"Save ALT data before search\"\nconst allAltInvoices = $('Save ALT data before search').all();\n\n// Отримуємо результати merge\nconst mergeResults = $input.all();\n\n// Створюємо мапу знайдених інвойсів, зберігаючи fileName та pathDisplay\nconst foundInvoiceMap = {};\nmergeResults.forEach(item => {\n    const altInvoiceName = item.json.foundInvoice; // Це alternativeInvoiceName зі знайденого файлу\n    if (altInvoiceName) {\n        foundInvoiceMap[altInvoiceName] = {\n            fileName: item.json.fileName,\n            pathDisplay: item.json.pathDisplay\n        };\n    }\n});\n\n// Обробляємо всі альтернативні інвойси\nreturn allAltInvoices.map(altInvoice => {\n    const altInvoiceName = altInvoice.json.alternativeInvoiceName;\n    const foundData = foundInvoiceMap[altInvoiceName]; // Отримуємо об'єкт {fileName, pathDisplay} або undefined\n\n    const isFound = !!foundData; // Перевіряємо, чи були знайдені дані\n\n    const outputItem = {\n        ...altInvoice.json, // Копіюємо всі оригінальні властивості з Save ALT data before search\n        status: isFound ? 'OK' : 'NOK'\n    };\n\n    // Якщо інвойс був знайдений, додаємо fileName та pathDisplay\n    if (isFound) {\n        outputItem.fileName = foundData.fileName;\n        outputItem.pathDisplay = foundData.pathDisplay;\n    } else {\n        // Якщо інвойс не знайдено, встановлюємо fileName та pathDisplay як null\n        outputItem.fileName = null;\n        outputItem.pathDisplay = null;\n    }\n\n    return outputItem;\n});"
+        "jsCode": "// Отримуємо всі альтернативні інвойси з \"Save ALT data before search\"\nconst allAltInvoices = $('Save ALT data before search').all();\n\n// Отримуємо результати merge\nconst mergeResults = $input.all();\n\n// Створюємо мапу знайдених інвойсів, зберігаючи всі знайдені файли для кожного invoiceName\nconst foundInvoiceMap = {};\nmergeResults.forEach(item => {\n    const altInvoiceName = item.json.foundInvoice; // Це alternativeInvoiceName зі знайденого файлу\n    if (altInvoiceName) {\n        // Якщо це перший файл для цього invoiceName, створюємо масив\n        if (!foundInvoiceMap[altInvoiceName]) {\n            foundInvoiceMap[altInvoiceName] = [];\n        }\n        \n        // Додаємо файл до масиву\n        foundInvoiceMap[altInvoiceName].push({\n            fileName: item.json.fileName,\n            pathDisplay: item.json.pathDisplay\n        });\n    }\n});\n\n// Обробляємо всі альтернативні інвойси\nconst results = [];\nallAltInvoices.forEach(altInvoice => {\n    const altInvoiceName = altInvoice.json.alternativeInvoiceName;\n    const foundFiles = foundInvoiceMap[altInvoiceName]; // Отримуємо масив файлів або undefined\n\n    const isFound = !!foundFiles && foundFiles.length > 0; // Перевіряємо, чи були знайдені дані\n\n    if (isFound && foundFiles.length === 1) {\n        // Якщо знайдено тільки один файл - стандартна поведінка\n        const foundData = foundFiles[0];\n        const outputItem = {\n            ...altInvoice.json, // Копіюємо всі оригінальні властивості з Save ALT data before search\n            status: 'OK',\n            fileName: foundData.fileName,\n            pathDisplay: foundData.pathDisplay\n        };\n        results.push(outputItem);\n    } else if (isFound && foundFiles.length > 1) {\n        // Якщо знайдено кілька файлів - створюємо окремий запис для кожного файлу\n        foundFiles.forEach((foundData, index) => {\n            const outputItem = {\n                ...altInvoice.json, // Копіюємо всі оригінальні властивості з Save ALT data before search\n                status: 'OK',\n                fileName: foundData.fileName,\n                pathDisplay: foundData.pathDisplay\n            };\n            results.push(outputItem);\n        });\n    } else {\n        // Якщо інвойс не знайдено\n        const outputItem = {\n            ...altInvoice.json, // Копіюємо всі оригінальні властивості з Save ALT data before search\n            status: 'NOK',\n            fileName: null,\n            pathDisplay: null\n        };\n        results.push(outputItem);\n    }\n});\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -285,7 +285,7 @@
         1552,
         -448
       ],
-      "id": "5767e2a4-6aca-4bfd-b2d3-4da96a8b6c46",
+      "id": "c8685438-5136-4d02-b500-0f75b8090289",
       "name": "SET 'OK' : 'NOK' status for ALT invoices"
     },
     {
@@ -298,7 +298,7 @@
         208,
         -448
       ],
-      "id": "92416783-78d2-42c8-ab4c-a7301cad4e41",
+      "id": "5e82ff15-5743-4269-be7f-db135e69962e",
       "name": "Filter unique ALT invoices"
     },
     {
@@ -312,7 +312,7 @@
         1776,
         -304
       ],
-      "id": "ab89c1d0-4931-4dfe-9b7b-8733c22d3e6d",
+      "id": "17449a22-07e6-4f92-9587-e8a639352aba",
       "name": "Delete temp columns from ALT data"
     },
     {
@@ -325,7 +325,7 @@
         208,
         -16
       ],
-      "id": "967edf28-e49e-4ea9-a66e-d8ee9867d26c",
+      "id": "8f987066-498a-4be4-9930-75b479007461",
       "name": "Filter unique FIN invoices"
     },
     {
@@ -336,7 +336,7 @@
         2000,
         -112
       ],
-      "id": "8589ecc3-25ca-4b61-9a9f-ae0a68030337",
+      "id": "9773a14b-0d56-4568-b2c4-d8f0482590b2",
       "name": "Merge FIN and ALT data"
     },
     {
@@ -350,7 +350,7 @@
         -464,
         -208
       ],
-      "id": "c56264c5-7f65-4376-ad43-d89d1e6437af",
+      "id": "53c43355-a9e4-4ff0-83b7-055586defea1",
       "name": "Parse XLSX with Python"
     },
     {
@@ -384,7 +384,7 @@
         -16,
         -352
       ],
-      "id": "be80836b-0755-49f7-9e84-9890e1fcd3d1",
+      "id": "f09a6992-456a-42b5-a405-437872ac14e5",
       "name": "Check ALT number is not EMPTY"
     },
     {
@@ -397,7 +397,7 @@
         -240,
         -208
       ],
-      "id": "22625ff2-e1f9-4c66-b94a-206f4e45e84e",
+      "id": "eeafeaed-8e54-4877-ab60-940b88576bf4",
       "name": "Exclude some Item types"
     },
     {
@@ -411,7 +411,7 @@
         2224,
         -112
       ],
-      "id": "fde0934e-ddf8-4ba7-bf60-20909199f49c",
+      "id": "d27929a2-5718-4034-9b35-58141046307f",
       "name": "Merge FIN and ALT invoice statuses"
     },
     {
@@ -429,7 +429,7 @@
         -912,
         -208
       ],
-      "id": "041b8491-8ebc-4f86-a54f-b9466d18af53",
+      "id": "e563c566-8d95-4cdf-bb12-1ec2354f17ce",
       "name": "Get excel file name",
       "credentials": {
         "dropboxOAuth2Api": {
@@ -450,7 +450,7 @@
         -688,
         -208
       ],
-      "id": "39cf1bca-d93c-4f38-8f5b-77176a1d15cd",
+      "id": "c84ef954-c107-4a6c-8a33-1e1aa75a8cd6",
       "name": "Download a excel file",
       "credentials": {
         "dropboxOAuth2Api": {
@@ -467,7 +467,7 @@
         -1136,
         -208
       ],
-      "id": "ed77aad9-41c4-4eef-917d-68e99b1e273f",
+      "id": "628e529b-36e9-4b5f-acc1-1147988c7210",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -483,21 +483,8 @@
         2448,
         -112
       ],
-      "id": "63195317-54b1-4392-88ec-5897574bbe8c",
+      "id": "929970af-9862-47ca-aa6a-e62eef280e38",
       "name": "Convert data to excel file"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Фільтруємо записи, залишаючи тільки зі статусом \"OK\"\nconst filteredItems = $input.all().filter(item => {\n    return item.json.status === \"OK\";\n});\n\nreturn filteredItems;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2224,
-        -352
-      ],
-      "id": "3dc85f4f-3cfb-4e16-8a47-2a0f1c2cee89",
-      "name": "Filter only found ALT invoices"
     },
     {
       "parameters": {},
@@ -507,7 +494,7 @@
         2000,
         -352
       ],
-      "id": "0de9654a-f579-4417-8185-882166a356e2",
+      "id": "5320295a-a79a-4da6-8a2e-a80135e7d075",
       "name": "Merge"
     },
     {
@@ -521,7 +508,7 @@
         1776,
         -592
       ],
-      "id": "ae5e401f-ca63-4ef4-ae50-6170cdb3121d",
+      "id": "8a584c0e-2a43-4cb5-90bc-51f4e84226b8",
       "name": "Delete unnecessary ALT invoices data"
     },
     {
@@ -535,7 +522,7 @@
         1776,
         -112
       ],
-      "id": "04092293-f496-45da-a1cc-29e51195b8e3",
+      "id": "dfe6a981-ca31-4c9f-9d2b-ed77fa165200",
       "name": "Delete unnecessary FIN invoices data"
     },
     {
@@ -543,10 +530,10 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2672,
+        2896,
         -496
       ],
-      "id": "b6b0f58d-6b70-4321-b9f1-4a16722d967c",
+      "id": "67a15e19-8d00-4b4e-b8ea-a59e1d5f548c",
       "name": "No Operation, do nothing1"
     },
     {
@@ -561,7 +548,7 @@
         2672,
         -112
       ],
-      "id": "f4a83adc-ff43-4bd6-bafa-4fa5e799f669",
+      "id": "5368a9ad-8fab-45cc-9e4d-d2ead83c6063",
       "name": "Upload excel file with results to dropBox",
       "credentials": {
         "dropboxOAuth2Api": {
@@ -591,7 +578,7 @@
         1328,
         -448
       ],
-      "id": "708b0fe8-92af-4b01-a078-dc3456fe2939",
+      "id": "c83b14da-612e-4721-aa41-43d4ab4b5199",
       "name": "Merge ALT invoice data"
     },
     {
@@ -604,38 +591,47 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        2448,
+        2672,
         -352
       ],
-      "id": "c885d7a7-e180-4869-8e8d-5d32c29ccd83",
+      "id": "5101e6f3-ccd9-49fe-8317-dbdf8f3a2fcc",
       "name": "Loop Over Items"
     },
     {
       "parameters": {
-        "subject": "Automation is finished",
+        "sendTo": "andrii.chyzh@boosta.co",
+        "subject": "=Automation is complete",
         "emailType": "text",
-        "message": "=Automation is finished. Xlsx results are located in  {{ $json.name }} file on DropBox in /Parsed_excel_resuls folder",
-        "options": {}
+        "message": "=Automation is complete.\nThe XLSX results are located in the {{ $json.path_display }} file on Dropbox.\n\nLink: https://www.dropbox.com/preview{{ $json.path_display }}",
+        "options": {
+          "appendAttribution": false
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        3136,
-        -96
+        2896,
+        -112
       ],
-      "id": "dbf43416-2350-4add-b484-a8c3cdd9e058",
+      "id": "9bc48bf6-28ce-4f5e-8fa1-139648824184",
       "name": "Send successful automation email",
-      "webhookId": "6e3e20d2-ac3f-4638-b4e6-49d4e02b2f93"
+      "webhookId": "c5e97e5f-7265-46f1-9a8d-a4e4d9e41478",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JHrCmpUnBGu2USai",
+          "name": "Essay Developer Gmail account"
+        }
+      }
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2896,
+        3120,
         -112
       ],
-      "id": "bf855019-a633-4336-ab58-c0c1c2c2d7a0",
+      "id": "c59d6607-d4d6-4ae8-810f-40ae096d8e70",
       "name": "No Operation, do nothing2"
     },
     {
@@ -648,10 +644,10 @@
       "type": "n8n-nodes-base.dropbox",
       "typeVersion": 1,
       "position": [
-        2672,
+        2896,
         -304
       ],
-      "id": "9594bd3a-775b-4e68-9fc5-a14f99dbf906",
+      "id": "a1f19a82-284c-4f82-8810-ecac7292510b",
       "name": "Move invoice files to sorted folder",
       "credentials": {
         "dropboxOAuth2Api": {
@@ -670,8 +666,34 @@
         -16,
         -16
       ],
-      "id": "83d1d9c3-2572-4fa7-a044-a084b578dbcb",
+      "id": "a7bc05fc-789f-45e5-a272-b0871627c4df",
       "name": "Exclude not FIN/FINORG invoice names"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Фільтруємо записи, залишаючи тільки зі статусом \"OK\"\nconst filteredItems = $input.all().filter(item => {\n    return item.json.status === \"OK\";\n});\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        -352
+      ],
+      "id": "0c0cf03d-6081-405e-88d4-edb36c51bb42",
+      "name": "Filter only found invoices"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Отримуємо всі записи зі статусом \"OK\"\nconst items = $input.all();\n\n// Створюємо Map для зберігання унікальних файлів\n// Ключ - fileName, значення - перший знайдений запис\nconst uniqueFiles = new Map();\n\nitems.forEach(item => {\n    const fileName = item.json.fileName;\n    \n    // Якщо файл ще не доданий, додаємо його\n    if (fileName && !uniqueFiles.has(fileName)) {\n        uniqueFiles.set(fileName, {\n            accountName: item.json.accountName,\n            date: item.json.date,\n            fileName: fileName,\n            pathDisplay: item.json.pathDisplay\n        });\n    }\n});\n\n// Повертаємо тільки унікальні файли\nreturn Array.from(uniqueFiles.values());"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        -352
+      ],
+      "id": "d89063bf-8ae1-41c7-b2e9-c23a5bab9d05",
+      "name": "Exclude duplicates file path"
     }
   ],
   "pinData": {},
@@ -976,7 +998,7 @@
       "main": [
         [
           {
-            "node": "Filter only found ALT invoices",
+            "node": "Filter only found invoices",
             "type": "main",
             "index": 0
           }
@@ -1005,22 +1027,11 @@
         ]
       ]
     },
-    "Filter only found ALT invoices": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Upload excel file with results to dropBox": {
       "main": [
         [
           {
-            "node": "No Operation, do nothing2",
+            "node": "Send successful automation email",
             "type": "main",
             "index": 0
           }
@@ -1082,17 +1093,55 @@
           }
         ]
       ]
+    },
+    "No Operation, do nothing2": {
+      "main": [
+        []
+      ]
+    },
+    "Filter only found invoices": {
+      "main": [
+        [
+          {
+            "node": "Exclude duplicates file path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exclude duplicates file path": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send successful automation email": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a5dbcd2e-19ed-4afe-be38-77713130e0c3",
+  "versionId": "21c6a881-86af-4afb-b1df-df0f3189b02d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e64ee2d090754eaf8bf7cc58dc89877463b45bd834395c2f18561dcd126634fe"
   },
-  "id": "r2DEiNuyRsUpDiMD",
+  "id": "hZBXpIquR1ivtVqe",
   "tags": []
 }
